@@ -246,6 +246,7 @@ class _HomePageState extends State<HomePage> {
         .toList()
       ..sort((a, b) => a.english.compareTo(b.english));
     print(wordPairs);
+
     textRecognizer.close();
     return text;
   }
