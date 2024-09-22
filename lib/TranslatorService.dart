@@ -45,17 +45,4 @@ class TranslatorService {
     }
     return translatedText;
   }
-
-  Future<void> deleteModel() async {
-    try {
-      await modelManager.deleteModel(TranslateLanguage.bengali.bcpCode);
-      print('Model deleted successfully.');
-    } catch (e) {
-      print('Error deleting model: $e');
-    }
-  }
-
-  void dispose() {
-    _translator.close();
-  }
 }

@@ -40,6 +40,9 @@ dependencies:
   image_cropper: ^8.0.2
   google_mlkit_text_recognition: ^0.13.0
   google_mlkit_translation: ^0.11.1
+  firebase_core: ^3.2.0
+  cloud_firestore: ^5.1.0
+  fluttertoast: ^8.2.8
 
 
 dev_dependencies:
@@ -80,7 +83,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+
+  fonts:
+    - family: Playwrite
+      fonts:
+        - asset: fonts/PlaywriteDEGrund-VariableFont_wght.ttf
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

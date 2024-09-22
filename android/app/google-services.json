@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "873304356745",
+    "project_id": "banglalens-14c21",
+    "storage_bucket": "banglalens-14c21.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873304356745:android:407a0246cb05a280bdd358",
+        "android_client_info": {
+          "package_name": "com.example.bangla_translate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtlgvDA4uCOcPpRVBZKA1j0tbiZgVB-OA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

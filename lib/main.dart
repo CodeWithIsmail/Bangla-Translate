@@ -1,7 +1,17 @@
 import 'ImportAll.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+ await FirebaseFirestore.instance.collection('UserTime').add({
+    'Time': DateTime.now(),
+  });
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

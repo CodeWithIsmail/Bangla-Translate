@@ -10,3 +10,7 @@ export 'package:google_mlkit_translation/google_mlkit_translation.dart';
 export 'package:flutter/services.dart';
 export 'wordpair.dart';
 export 'TranslatorService.dart';
+export 'package:firebase_core/firebase_core.dart';
+export 'firebase_options.dart';
+export 'package:cloud_firestore/cloud_firestore.dart';
+export 'package:fluttertoast/fluttertoast.dart';

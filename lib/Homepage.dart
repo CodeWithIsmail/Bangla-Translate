@@ -18,21 +18,46 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     translator.downloadModelIfNeeded();
+    getLostData();
+  }
+
+  Future<void> getLostData() async {
+    final LostDataResponse response = await _picker.retrieveLostData();
+    if (response.isEmpty) {
+      return;
+    }
+    if (response.file != null) {
+      File? croppedFile = await _cropImage(File(response.file!.path));
+      if (croppedFile != null) {
+        setState(() {
+          selectedMedia = croppedFile;
+        });
+        final text = await _extractText(croppedFile);
+        setState(() {
+          extractedText = text ?? "";
+        });
+      }
+    } else {
+      Fluttertoast.showToast(
+        msg: response.exception?.message ?? "Unknown error occurred.",
+        backgroundColor: Colors.redAccent,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Text Recognition"),
-      ),
       body: _buildUI(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showPicker(context);
         },
-        child: const Icon(Icons.add),
+        child: const Icon(
+          Icons.add,
+          size: 30,
+        ),
+        shape: CircleBorder(),
       ),
     );
   }
@@ -68,66 +93,145 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _getImage(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      File? croppedFile = await _cropImage(File(pickedFile.path));
-      if (croppedFile != null) {
-        setState(() {
-          selectedMedia = croppedFile;
-        });
-        final text = await _extractText(croppedFile);
-        setState(() {
-          extractedText = text ?? "";
-        });
+    try {
+      final pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        File? croppedFile = await _cropImage(File(pickedFile.path));
+        if (croppedFile != null) {
+          setState(() {
+            selectedMedia = croppedFile;
+          });
+          final text = await _extractText(croppedFile);
+          setState(() {
+            extractedText = text ?? "";
+          });
+        }
       }
+    } on Exception catch (e) {
+      Fluttertoast.showToast(
+          msg: "Image load failed. Try again or try image from gallery.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.lightBlueAccent,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      // TODO
     }
   }
 
   Future<File?> _cropImage(File imageFile) async {
-    CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: imageFile.path,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: Colors.deepOrange,
-          toolbarWidgetColor: Colors.white,
-          aspectRatioPresets: [
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.square,
-            CropAspectRatioPresetCustom(),
-          ],
-        ),
-        IOSUiSettings(
-          title: 'Crop Image',
-          aspectRatioPresets: [
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.square,
-            CropAspectRatioPresetCustom(),
-          ],
-        ),
-      ],
-    );
-    if (croppedFile != null) {
-      return File(croppedFile.path);
+    try {
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: imageFile.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPresetCustom(),
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPresetCustom(),
+            ],
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        return File(croppedFile.path);
+      }
+      return null;
+    } on Exception catch (e) {
+      Fluttertoast.showToast(
+          msg: "Image load failed. Try again or try image from gallery.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.lightBlueAccent,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      // TODO
     }
-    return null;
   }
 
   Widget _buildUI() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _imageView(),
-            SizedBox(height: 20),
-            _extractTextView(),
-            SizedBox(height: 20),
-            _buildWordPairList(),
+    return Container(
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF757F9A),
+            Color(0xFFD7DDE8),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'BanglaLens',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Playwrite',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 30),
+                Text(
+                  'Captured Image',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Playwrite',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 10),
+                _imageView(),
+                SizedBox(height: 30),
+                Text(
+                  'Extracted Text',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Playwrite',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 10),
+                _extractTextView(),
+                SizedBox(height: 30),
+                Text(
+                  'Word Meaning',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Playwrite',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 10),
+                _buildWordPairList(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -175,7 +279,7 @@ class _HomePageState extends State<HomePage> {
               const SnackBar(content: Text('Text copied to clipboard!')),
             );
           },
-          child: const Text('Copy'),
+          child: const Text('Copy extracted text'),
         ),
       ],
     );
@@ -216,39 +320,52 @@ class _HomePageState extends State<HomePage> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisSpacing: 10,
-        crossAxisSpacing: 4,
+        crossAxisSpacing: 6,
       ),
     );
   }
 
   Future<String?> _extractText(File file) async {
-    final textRecognizer = TextRecognizer(
-      script: TextRecognitionScript.latin,
-    );
-    final InputImage inputImage = InputImage.fromFile(file);
-    final RecognizedText recognizedText =
-        await textRecognizer.processImage(inputImage);
-    String text = recognizedText.text;
-    print(text);
+    try {
+      final textRecognizer = TextRecognizer(
+        script: TextRecognitionScript.latin,
+      );
+      final InputImage inputImage = InputImage.fromFile(file);
+      final RecognizedText recognizedText =
+          await textRecognizer.processImage(inputImage);
+      String text = recognizedText.text;
+      print(text);
 
-    List<String> words = text.split(RegExp(r'[^\w]+'));
-    Map<String, String> uniqueWordPairs = {};
+      List<String> words = text.split(RegExp(r'[^\w]+'));
+      Map<String, String> uniqueWordPairs = {};
 
-    for (String word in words) {
-      if (word.isNotEmpty && !RegExp(r'^\d+$').hasMatch(word)) {
-        String lowerCaseWord = word.toLowerCase();
-        String bengaliMeaning = await translator.translateText(lowerCaseWord);
-        uniqueWordPairs[lowerCaseWord] = bengaliMeaning;
+      for (String word in words) {
+        if (word.isNotEmpty && !RegExp(r'^\d+$').hasMatch(word)) {
+          String lowerCaseWord = word.toLowerCase();
+          String bengaliMeaning = await translator.translateText(lowerCaseWord);
+          uniqueWordPairs[lowerCaseWord] = bengaliMeaning;
+        }
       }
-    }
-    wordPairs = uniqueWordPairs.entries
-        .map((entry) => WordPair(entry.key, entry.value))
-        .toList()
-      ..sort((a, b) => a.english.compareTo(b.english));
-    print(wordPairs);
 
-    textRecognizer.close();
-    return text;
+      wordPairs = uniqueWordPairs.entries
+          .map((entry) => WordPair(entry.key, entry.value))
+          .toList()
+        ..sort((a, b) => a.english.compareTo(b.english));
+      print(wordPairs);
+
+      textRecognizer.close();
+      return text;
+    } on Exception catch (e) {
+      Fluttertoast.showToast(
+          msg: "Text extraction failed. Try again or try image from gallery.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.lightBlueAccent,
+          textColor: Colors.black,
+          fontSize: 16.0);
+      // TODO
+    }
   }
 }
 
