@@ -2,13 +2,11 @@ import 'ImportAll.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await TranslatorService().downloadModelIfNeeded();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await FirebaseFirestore.instance.collection('UserTime').add({
-    'Time': DateTime.now(),
-  });
+  TranslatorService translatorService = TranslatorService();
+  bool isModelDownloaded = await translatorService.isModelDownloaded();
+  if (!isModelDownloaded) {
+    await translatorService.downloadModelIfNeeded();
+  }
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
