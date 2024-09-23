@@ -17,7 +17,7 @@ class _HomePageState extends State<HomePage> {
 
   void initState() {
     super.initState();
-    translator.downloadModelIfNeeded();
+    // translator.downloadModelIfNeeded();
     getLostData();
   }
 

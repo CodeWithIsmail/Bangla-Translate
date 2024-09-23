@@ -2,10 +2,11 @@ import 'ImportAll.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await TranslatorService().downloadModelIfNeeded();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
- await FirebaseFirestore.instance.collection('UserTime').add({
+  await FirebaseFirestore.instance.collection('UserTime').add({
     'Time': DateTime.now(),
   });
   SystemChrome.setPreferredOrientations([
